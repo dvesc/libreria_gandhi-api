@@ -34,24 +34,32 @@ const create_links = (
 //-----------------------------------------------------------------------------
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const paginated_data = (
-  page: number,
-  size: number,
+  pag: number,
+  siz: number,
   data_array: Array<any>,
   req: Request
 ): any => {
-  const start = (page - 1) * size,
-    total_pages = Math.floor(data_array.length / size);
+  const page = pag || 1,
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    size = siz || parseInt(process.env.SIZE_DEFAULT!),
+    start = (page - 1) * size,
+    estimated_pages = data_array.length / size;
+  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  let total_pages: number;
+  if (estimated_pages > 0 && estimated_pages < 1)
+    total_pages = Math.ceil(estimated_pages);
+  else total_pages = Math.floor(estimated_pages);
+  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   let url = req.url.replace(/^(\/([a-z]{1,})?(\?))/, "?"),
     complete_url = "",
     params: string[] = url.split("&"),
     links: object = {};
-
   if (!params.some((element) => /page=\d{1,}/g.test(element))) {
     if (url.includes("?")) url = url.concat("&page=1");
     else url = url.concat("?page=1");
     params = url.split("&");
   }
-
+  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   for (let i = 0; i < params.length; i++) {
     if (
       (!params[i].includes("page") && i === params.length) ||

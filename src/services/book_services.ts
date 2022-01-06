@@ -22,11 +22,20 @@ export const get_book_filter = async (
   filter: object
 ): Promise<Book[]> => {
   try {
-    const coincidences: Book[] = await book.find(filter);
+    const coincidences: Book[] = await book
+      .find(filter)
+      .populate({
+        path: "author",
+        select: { name: 1 },
+      })
+      .populate({
+        path: "publisher",
+        select: { name: 1 },
+      });
     return coincidences;
   } catch (err) {
     send_error(res, err);
-    throw err; 
+    throw err;
   }
 };
 //-----------------------------------------------------------------------------
@@ -37,7 +46,7 @@ export const get_books_by_name = async (
 ): Promise<Book[]> => {
   try {
     let filter: object = {};
-    if (value) filter= { name: new RegExp(`${value}`, "i") }
+    if (value) filter = { name: new RegExp(`${value}`, "i") };
 
     const coincidences: Book[] = await book
       .find(filter)
@@ -71,8 +80,11 @@ export const get_books_by_author = async (
       terms: object[] = [];
     authors.forEach((author) => terms.push({ author: author._id }));
 
+    let filter: object = { __v: -1 }; //es para que no salga ninguno si no hay coincidencia de authores
+
+    if (terms.length > 0) filter = { $or: terms };
     const coincidences: Book[] = await book
-      .find({ $or: terms })
+      .find(filter)
       .sort(sort)
       .populate({
         path: "author",
@@ -99,15 +111,15 @@ export const get_books_by_publisher = async (
     let val = "";
     if (value) val = value;
 
-    const publishers = await publisher_services.get_publisher_by_name(
-        res,
-        val
-      ),
+    const publishers = await publisher_services.get_publisher_by_name(res, val),
       terms: object[] = [];
     publishers.forEach((publisher) => terms.push({ publisher: publisher._id }));
 
+    let filter: object = { __v: -1 };
+    if (terms.length > 0) filter = { $or: terms };
+
     const coincidences: Book[] = await book
-      .find({ $or: terms })
+      .find(filter)
       .sort(sort)
       .populate({
         path: "author",
@@ -132,7 +144,7 @@ export const get_books_by_format = async (
 ): Promise<Book[]> => {
   try {
     let filter: object = {};
-    if (value) filter= { format: value };
+    if (value) filter = { format: value };
     const coincidences: Book[] = await book
       .find(filter)
       .sort(sort)
@@ -159,7 +171,7 @@ export const get_books_by_language = async (
 ): Promise<Book[]> => {
   try {
     let filter: object = {};
-    if (value) filter= { language: value };
+    if (value) filter = { language: value };
     const coincidences: Book[] = await book
       .find(filter)
       .sort(sort)
@@ -186,7 +198,7 @@ export const get_books_by_year = async (
 ): Promise<Book[]> => {
   try {
     let filter: object = {};
-    if (value) filter= { year: parseInt(value) };
+    if (value) filter = { year: parseInt(value) };
     const coincidences: Book[] = await book
       .find(filter)
       .sort(sort)
@@ -220,16 +232,18 @@ export const get_books_by_all = async (
         { name: reg_exp },
         { format: reg_exp },
         { language: reg_exp },
-        { publication_year: reg_exp}
+        { publication_year: reg_exp },
       ],
       publishers = await publisher_services.get_publisher_by_name(res, value),
       authors = await author_services.get_author_by_name(res, value);
 
     publishers.forEach((publisher) => terms.push({ publisher: publisher._id }));
     authors.forEach((author) => terms.push({ author: author._id }));
-
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    let filter: object = { __v: -1 };
+    if (terms.length > 0) filter = { $or: terms };
     const coincidences: Book[] = await book
-      .find({ $or: terms })
+      .find(filter)
       .sort(sort)
       .populate({
         path: "author",
