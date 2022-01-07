@@ -67,6 +67,18 @@ export const get_books_by_name = async (
   }
 };
 //-----------------------------------------------------------------------------
+export const get_book_by_id = async (
+  res: Response,
+  value: string,
+): Promise<Book | null> => {
+  try {
+    return book.findById(value)
+  }catch(err){
+    send_error(res,err)
+    throw err;
+  }
+}
+//-----------------------------------------------------------------------------
 export const get_books_by_author = async (
   res: Response,
   value: string,

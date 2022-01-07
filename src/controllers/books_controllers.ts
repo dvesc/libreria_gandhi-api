@@ -19,6 +19,8 @@ export const create_book = async (
       language,
       publication_year,
     } = req.body;
+    
+    
 
     if (publication_year > new Date().getFullYear() || publication_year < 0)
       throw new apiError(
@@ -114,3 +116,31 @@ export const get_books = async (req: Request, res: Response): Promise<void> => {
     send_error(res, err);
   }
 };
+
+export const edit_book = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { book_id } = req.params,
+      {name,author, publisher,pages,format,language,publication_year} = req.body,
+      data: Book | null = await book_services.get_book_by_id(res,book_id)
+
+    if(!data)
+      throw new apiError("Wrong ID or the book does not exist",book_id,"params")
+    
+    data.name = name || data.name
+    data.author = author || data.author
+    data.publisher = publisher || data.publisher
+    data.pages = pages || data.pages
+    data.format = format || data.format
+    data.language = language || data.language
+    data.publication_year =  publication_year || data.publication_year
+
+    data.save()
+    if (!res.writableEnded)
+      res.send({ status: "Edited succesfully" });
+  }catch(err){
+    send_error(res,err)
+  }
+}

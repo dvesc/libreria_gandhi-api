@@ -1,7 +1,11 @@
 import { checkSchema, ParamSchema } from "express-validator";
 
-const text_schema = (): ParamSchema => {
+const language_schema = (update_method?: boolean): ParamSchema => {
   return {
+    optional: {
+      options: update_method ? { nullable: true } : false,
+    },
+    errorMessage: "path 'language' is requerid",
     isInt: {
       negated: true,
       bail: true,
@@ -17,106 +21,112 @@ const text_schema = (): ParamSchema => {
       options: (value: string): string => {
         return value.toLowerCase();
       },
-    }
-  }
-}
+    },
+  };
+};
 
-const name_schema = (): ParamSchema => {
+const name_schema = (update_method: boolean): ParamSchema => {
   return {
+    optional: {
+      options: update_method ? { nullable: true } : false,
+    },
+    errorMessage: "path 'name' is requerid",
     isString: true,
     isAscii: {
       bail: true,
       errorMessage: "Cannot contain rare characters",
     },
     customSanitizer: {
-      options: (value: string): string => 
-        value.toLowerCase()
-    }
-  }
-}
+      options: (value: string): string => value.toLowerCase(),
+    },
+  };
+};
 
-const integer_schema = (): ParamSchema => {
+const pages_schema = (update_method: boolean): ParamSchema => {
   return {
+    optional: {
+      options: update_method ? { nullable: true } : false,
+    },
+    errorMessage: "path 'pages' is requerid",
     isString: {
       negated: true,
       bail: true,
       errorMessage: "Must be an Integer",
     },
-    isInt:true,
-  }
-}
+    isInt: true,
+  };
+};
 
-const id_schema = (): ParamSchema => {
+const py_schema = (update_method: boolean): ParamSchema => {
   return {
-    matches:{
-      options: /^[0-9a-fA-F]{24}$/
+    optional: {
+      options: update_method ? { nullable: true } : false,
     },
-    errorMessage: "Must be a valid mongo id"
-  }
-}
+    errorMessage: "path 'publication_year' is requerid",
+    isString: {
+      negated: true,
+      bail: true,
+      errorMessage: "Must be an Integer",
+    },
+    isInt: true,
+  };
+};
 
+const format_schema = (update_method: boolean): ParamSchema => {
+  return {
+    optional: {
+      options: update_method ? { nullable: true } : false,
+    },
+    errorMessage: "path 'format' is requerid",
+    matches: {
+      options: /^(hardcover|softcover|ebook)$/,
+      errorMessage: "Must be a valid format: hardcover, softcover  or ebook",
+    },
+  };
+};
+
+const author_schema = (update_method: boolean): ParamSchema => {
+  return {
+    optional: {
+      options: update_method ? { nullable: true } : false,
+    },
+    errorMessage: "path 'author' is requerid",
+    matches: {
+      options: /^[0-9a-fA-F]{24}$/,
+      errorMessage: "Must be a valid mongo id",
+    },
+  };
+};
+
+const publisher_schema = (update_method: boolean): ParamSchema => {
+  return {
+    optional: {
+      options: update_method ? { nullable: true } : false,
+    },
+    errorMessage: "path 'publisher' is requerid",
+    matches: {
+      options: /^[0-9a-fA-F]{24}$/,
+      errorMessage: "Must be a valid mongo id",
+    },
+  };
+};
 
 export const book_validator = checkSchema({
-  name: name_schema(),
-  publisher: id_schema(),
-  pages: integer_schema(),
-  format: text_schema(),
-  language: text_schema(),
-  publication_year: integer_schema(),
-  author: id_schema()
+  name: name_schema(false),
+  publisher: publisher_schema(false),
+  pages: pages_schema(false),
+  format: format_schema(false),
+  language: language_schema(false),
+  publication_year: py_schema(false),
+  author: author_schema(false),
 });
 
-
-/**
-  const array_schema = (): ParamSchema =>{
-    return {
-      isArray: {
-        bail: true,
-        errorMessage: "Must be an Array"
-      },
-      custom: {
-        options: (value:any): boolean=>{          
-          if (value.length === 0) return false;
-          return true
-        }
-      },
-      errorMessage:"'books' must contain at least one book"
-    }
-  }
-
-
-  export const book_validator = checkSchema({
-    books: array_schema(),
-    "books.*.name": name_schema(),
-    "books.*.publisher": text_schema(),
-    "books.*.pages": integer_schema(),
-    "books.*.format": text_schema(),
-    "books.*.lenguage": text_schema(),
-    "books.*.publication_year": integer_schema(),
-    "books.*.author": text_schema()
-} ); 
-
-----------------------------------------------------
-{
-    "books": [
-        {
-            "name": "Guerra mundial Z",
-            "publisher": "Planeta",
-            "pages": 234,
-            "format": "tapa blanda",
-            "lenguage": "Spanish",
-            "publication_year": 2014,
-            "author": "Max Brooks"
-        },
-        {
-            "name": "Guerra mundial Z",
-            "publisher": "Planeta",
-            "pages": 234,
-            "format": "tapa blanda",
-            "lenguage": "Spanish",
-            "publication_year": 2014,
-            "author": "Max Brooks"
-        }
-    ]
-}
-*/
+export const book_update_validator = checkSchema({
+  name: name_schema(true),
+  publisher: publisher_schema(true),
+  pages: pages_schema(true),
+  format: format_schema(true),
+  language: language_schema(true),
+  publication_year: py_schema(true),
+  author: author_schema(true),
+});

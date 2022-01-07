@@ -6,7 +6,7 @@ export interface Book extends Document {
   publisher:Schema.Types.ObjectId | string;
   pages?: string;
   format: string;
-  lenguage: string;
+  language: string;
   publication_year?: string;
 }
 
