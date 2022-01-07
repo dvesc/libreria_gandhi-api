@@ -21,5 +21,9 @@ books_routes.patch(
   validations_middleware,
   books_controllers.edit_book
 )
+books_routes.delete(
+  "/:book_id",
+  books_controllers.delete_book
+)
 
 export default books_routes;

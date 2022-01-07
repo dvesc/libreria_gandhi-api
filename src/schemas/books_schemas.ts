@@ -8,6 +8,7 @@ export interface Book extends Document {
   format: string;
   language: string;
   publication_year?: string;
+  discharge_date?: string
 }
 
 const books_schema = new Schema({

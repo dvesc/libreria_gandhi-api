@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Response, Request } from "express";
 import { Book } from "../schemas/books_schemas";
 import { apiError, send_error } from "../utils/response_utils";
@@ -105,7 +106,7 @@ export const get_books = async (req: Request, res: Response): Promise<void> => {
         data = await book_services.get_books_by_all(res, filter_value, sort);
         break;
       default:
-        data = await book_services.get_book_filter(res,{});
+        data = await book_services.get_book_filter(res,{discharge_date:null});
         break;
     }
     if (!res.writableEnded)
@@ -143,4 +144,24 @@ export const edit_book = async (
   }catch(err){
     send_error(res,err)
   }
+}
+
+
+export const delete_book = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { book_id } = req.params,
+      existing_book: Book|null = await book_services.get_book_by_id(res, book_id)
+
+    if(!existing_book || existing_book!.discharge_date !=  null ) 
+      throw new apiError("Wrong id or non-existent book",book_id,"params")
+    
+    existing_book.discharge_date = Date();
+    existing_book.save()
+    
+    if (!res.writableEnded)
+      res.send({"status":"deleted succesfully"})
+  }catch(err){send_error(res,err)}
 }

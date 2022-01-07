@@ -45,8 +45,8 @@ export const get_books_by_name = async (
   sort?: object
 ): Promise<Book[]> => {
   try {
-    let filter: object = {};
-    if (value) filter = { name: new RegExp(`${value}`, "i") };
+    let filter: object = {discharge_date:null};
+    if (value) filter = { name: new RegExp(`${value}`, "i"), discharge_date:null};
 
     const coincidences: Book[] = await book
       .find(filter)
@@ -91,10 +91,11 @@ export const get_books_by_author = async (
     const authors = await author_services.get_author_by_name(res, val),
       terms: object[] = [];
     authors.forEach((author) => terms.push({ author: author._id }));
-
+    
     let filter: object = { __v: -1 }; //es para que no salga ninguno si no hay coincidencia de authores
+  
+    if (terms.length > 0) filter = {$and:[{discharge_date:null}, {$or: terms} ]};
 
-    if (terms.length > 0) filter = { $or: terms };
     const coincidences: Book[] = await book
       .find(filter)
       .sort(sort)
@@ -128,7 +129,7 @@ export const get_books_by_publisher = async (
     publishers.forEach((publisher) => terms.push({ publisher: publisher._id }));
 
     let filter: object = { __v: -1 };
-    if (terms.length > 0) filter = { $or: terms };
+    if (terms.length > 0) filter = {$and:[{discharge_date:null}, {$or: terms} ]};
 
     const coincidences: Book[] = await book
       .find(filter)
@@ -155,8 +156,8 @@ export const get_books_by_format = async (
   sort?: object
 ): Promise<Book[]> => {
   try {
-    let filter: object = {};
-    if (value) filter = { format: value };
+    let filter: object = {discharge_date:null};
+    if (value) filter = { format: value, discharge_date:null };
     const coincidences: Book[] = await book
       .find(filter)
       .sort(sort)
@@ -182,8 +183,8 @@ export const get_books_by_language = async (
   sort?: object
 ): Promise<Book[]> => {
   try {
-    let filter: object = {};
-    if (value) filter = { language: value };
+    let filter: object = {discharge_date:null};
+    if (value) filter = { language: value,discharge_date:null };
     const coincidences: Book[] = await book
       .find(filter)
       .sort(sort)
@@ -209,8 +210,8 @@ export const get_books_by_year = async (
   sort?: object
 ): Promise<Book[]> => {
   try {
-    let filter: object = {};
-    if (value) filter = { year: parseInt(value) };
+    let filter: object = {discharge_date:null};
+    if (value) filter = { year: parseInt(value), discharge_date:null };
     const coincidences: Book[] = await book
       .find(filter)
       .sort(sort)
@@ -253,7 +254,8 @@ export const get_books_by_all = async (
     authors.forEach((author) => terms.push({ author: author._id }));
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     let filter: object = { __v: -1 };
-    if (terms.length > 0) filter = { $or: terms };
+    if (terms.length > 0) filter = {$and:[{discharge_date:null}, {$or: terms} ]};
+    
     const coincidences: Book[] = await book
       .find(filter)
       .sort(sort)
